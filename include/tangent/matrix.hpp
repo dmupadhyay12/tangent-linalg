@@ -78,9 +78,8 @@ public:
       for (size_t col = 0; col < cols_rhs; col++) {
         T value = 0;
         for (size_t col_lhs = 0; col_lhs < columns; col_lhs++) {
-          value += (*this)(row, col_lhs) * rhs(col_lhs, col);
+          output(row, col) += (*this)(row, col_lhs) * rhs(col_lhs, col);
         }
-        output(row, col) = value;
       }
     }
     return output;
