@@ -1,6 +1,7 @@
 // tests/matrix_tests.cpp
 #define CATCH_CONFIG_MAIN
 #include "tangent/matrix.hpp"
+#include "tangent/vector.hpp"
 #include <catch2/catch_all.hpp>
 #include <limits>
 #include <random>
@@ -138,4 +139,71 @@ TEST_CASE("Mixed types promote correctly (double * float)") {
   for (size_t r = 0; r < 2; ++r)
     for (size_t c = 0; c < 2; ++c)
       REQUIRE(got(r, c) == Approx(ref(r, c)).epsilon(1e-12).margin(1e-12));
+}
+
+TEST_CASE("Scalar multiplication of a matrix by a scalar, scalar second") {
+  auto A = from_list<double, 3, 3>({2, 4, 6, 8, 10, 12, 14, 16, 18});
+
+  auto res = A * 0.5;
+
+  auto ref = from_list<double, 3, 3>({1, 2, 3, 4, 5, 6, 7, 8, 9});
+
+  for (size_t r = 0; r < 2; r++) {
+    for (size_t c = 0; c < 2; c++) {
+      REQUIRE(res(r, c) == Approx(ref(r, c)).epsilon(1e-12).margin(1e-12));
+    }
+  }
+}
+
+TEST_CASE("Scalar multiplication of a matrix by a scalar, scalar first") {
+  auto A = from_list<double, 3, 3>({2, 4, 6, 8, 10, 12, 14, 16, 18});
+
+  auto res = 0.5 * A;
+
+  auto ref = from_list<double, 3, 3>({1, 2, 3, 4, 5, 6, 7, 8, 9});
+
+  for (size_t r = 0; r < 2; r++) {
+    for (size_t c = 0; c < 2; c++) {
+      REQUIRE(res(r, c) == Approx(ref(r, c)).epsilon(1e-12).margin(1e-12));
+    }
+  }
+}
+
+TEST_CASE(
+    "Scalar multiplication of a matrix of floats by a scalar, scalar first") {
+  auto A =
+      from_list<double, 3, 3>({0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8});
+
+  auto res = 0.5 * A;
+
+  auto ref =
+      from_list<double, 3, 3>({0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9});
+
+  for (size_t r = 0; r < 2; r++) {
+    for (size_t c = 0; c < 2; c++) {
+      REQUIRE(res(r, c) == Approx(ref(r, c)).epsilon(1e-12).margin(1e-12));
+    }
+  }
+}
+
+TEST_CASE("Validate equality operator for matrices") {
+  auto A = from_list<int, 1, 4>({1, 2, 3, 4});
+
+  auto ref = from_list<int, 1, 4>({1, 2, 3, 4});
+
+  REQUIRE(A == ref);
+}
+
+TEST_CASE("Validate column vector generation") {
+  auto vector_form = tangent::Vec<int, 4>({1, 2, 3, 4});
+  auto matrix_form = from_list<int, 1, 4>({1, 2, 3, 4});
+
+  REQUIRE(vector_form == matrix_form);
+}
+
+TEST_CASE("Validate row vector generation") {
+  auto vector_form = tangent::RowVec<int, 4>({1, 2, 3, 4});
+  auto matrix_form = from_list<int, 4, 1>({1, 2, 3, 4});
+
+  REQUIRE(vector_form == matrix_form);
 }
