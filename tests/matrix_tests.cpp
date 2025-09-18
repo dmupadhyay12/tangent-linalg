@@ -207,3 +207,23 @@ TEST_CASE("Validate row vector generation") {
 
   REQUIRE(vector_form == matrix_form);
 }
+
+TEST_CASE("Validate dot product standard") {
+  auto vector_1 = tangent::Vec<int, 4>({1, 2, 3, 4});
+  auto vector_2 = tangent::Vec<int, 4>({2, 3, 4, 5});
+
+  auto dot_product = tangent::dot(vector_1, vector_2);
+
+  // The expected dot product is 2 + 6 + 12 + 20 = 40
+  REQUIRE(dot_product == 40);
+}
+
+TEST_CASE("Validate dot product different_types") {
+  auto vector_1 = tangent::Vec<int, 4>({1, 2, 3, 4});
+  auto vector_2 = tangent::Vec<float, 4>({2.5, 3.5, 4.5, 5.5});
+
+  auto dot_product = tangent::dot(vector_1, vector_2);
+
+  // The expected dot product is 2.5 + 7 + 10.5 + 22 = 45.0
+  REQUIRE(dot_product == 45.0f);
+}

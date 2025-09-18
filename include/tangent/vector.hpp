@@ -41,4 +41,15 @@ RowVector<T, N> RowVec(std::initializer_list<T> elements) {
   return RowVector<T, N>(temp_arr);
 }
 
+template <typename T1, typename T2, size_t N>
+auto dot(Vector<T1, N> vec1, Vector<T2, N> vec2)
+    -> decltype(std::declval<T1>() * std::declval<T2>()) {
+  using T_out = decltype(std::declval<T1>() * std::declval<T2>());
+  T_out dot_product = 0;
+  for (size_t index = 0; index < N; index++) {
+    dot_product += (vec1(0, index) * vec2(0, index));
+  }
+  return dot_product;
+}
+
 } // namespace tangent
