@@ -227,3 +227,19 @@ TEST_CASE("Validate dot product different_types") {
   // The expected dot product is 2.5 + 7 + 10.5 + 22 = 45.0
   REQUIRE(dot_product == 45.0f);
 }
+
+TEST_CASE("Validate norm of a vector") {
+  auto vector_1 = tangent::Vec<int, 4>({1, 2, 3, 4});
+
+  auto vec_norm = tangent::norm<int, 4>(vector_1);
+
+  REQUIRE(vec_norm == Approx(5.477225575f).epsilon(1e-6));
+}
+
+TEST_CASE("Validate norm of a vector of floats") {
+  auto vector_1 = tangent::Vec<float, 4>({1.5, 2.5, 3.5, 4.5});
+
+  auto vec_norm = tangent::norm<float, 4>(vector_1);
+
+  REQUIRE(vec_norm == Approx(6.4031242374).epsilon(1e-6));
+}
