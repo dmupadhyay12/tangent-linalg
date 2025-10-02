@@ -85,6 +85,29 @@ public:
   }
 
   /**
+   * @brief Returns a product of two matrices - checks for dimensional
+   * compatibility and then computes matrix product
+   *
+   * @param rhs
+   * @return Matrix&
+   */
+  template <typename T_rhs, size_t rows_rhs, size_t cols_rhs>
+  auto operator^(const Matrix<T_rhs, rows_rhs, cols_rhs> &rhs) const {
+    static_assert(
+        columns == rows_rhs,
+        "Matrix multiplication cannot be done due to incompatible dimensions");
+    Matrix<T, rows, cols_rhs> output;
+    for (size_t row = 0; row < rows; row++) {
+      for (size_t col = 0; col < cols_rhs; col++) {
+        for (size_t col_lhs = 0; col_lhs < columns; col_lhs++) {
+          output(row, col) += (*this)(row, col_lhs) * rhs(col_lhs, col);
+        }
+      }
+    }
+    return output;
+  }
+
+  /**
    * @brief Returns the scalar multiplication of a matrix and a constant -
    * checks for dimensional compatibility and then computes matrix product
    *
