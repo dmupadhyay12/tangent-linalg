@@ -77,7 +77,6 @@ public:
         "Matrix multiplication cannot be done due to incompatible dimensions");
     int tile_size = 16;
     Matrix<T, rows, cols_rhs> output;
-#ifdef TILED_MULTIPLICATION
     // Block sizes for blocking of the matrix multiplications
     constexpr size_t Nc = 64; // try 32; also test 48 or 64
     constexpr size_t Kc = 64; // try 128–512 based on L2
@@ -103,17 +102,6 @@ public:
         }
       }
     }
-#elif STANDARD_LOOP_ORDERED_GEMM
-    for (size_t row = 0; row < rows; row++) {
-      for (size_t col = 0; col < cols_rhs; col++) {
-        T_rhs current_output = 0;
-        for (size_t col_lhs = 0; col_lhs < columns; col_lhs++) {
-          current_output += (*this)(row, col_lhs) * rhs(col_lhs, col);
-        }
-        output(row, col) = current_output;
-      }
-    }
-#endif
     return output;
   }
 
