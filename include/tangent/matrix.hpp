@@ -31,7 +31,9 @@ public:
    * @param col
    * @return T
    */
-  T &operator()(size_t row, size_t col) { return container[row][col]; }
+  inline constexpr T &operator()(size_t row, size_t col) {
+    return container[row][col];
+  }
 
   /**
    * @brief Const overload for () operator
@@ -73,14 +75,45 @@ public:
     static_assert(
         columns == rows_rhs,
         "Matrix multiplication cannot be done due to incompatible dimensions");
+    int tile_size = 16;
     Matrix<T, rows, cols_rhs> output;
-    for (size_t row = 0; row < rows; row++) {
-      for (size_t col = 0; col < cols_rhs; col++) {
-        for (size_t col_lhs = 0; col_lhs < columns; col_lhs++) {
-          output(row, col) += (*this)(row, col_lhs) * rhs(col_lhs, col);
+#ifdef TILED_MULTIPLICATION
+    // Block sizes for blocking of the matrix multiplications
+    constexpr size_t Nc = 64; // try 32; also test 48 or 64
+    constexpr size_t Kc = 64; // try 128–512 based on L2
+
+    for (size_t k0 = 0; k0 < columns; k0 += Kc) {
+      const size_t kend = std::min(columns, k0 + Kc);
+
+      for (size_t j0 = 0; j0 < cols_rhs; j0 += Nc) {
+        const size_t jend = std::min(cols_rhs, j0 + Nc);
+
+        for (size_t i = 0; i < rows; ++i) {
+          for (size_t j = j0; j < jend; ++j) {
+            // update the rolling sum
+            auto sum = output(i, j);
+            // block the k loop
+            for (size_t k = k0; k < kend; ++k) {
+              sum += (*this)(i, k) * rhs(k, j);
+            }
+            output(i, j) =
+                sum; // Single write to the output so that there are
+                     // minimal pointer dereferences and operator calls
+          }
         }
       }
     }
+#elif STANDARD_LOOP_ORDERED_GEMM
+    for (size_t row = 0; row < rows; row++) {
+      for (size_t col = 0; col < cols_rhs; col++) {
+        T_rhs current_output = 0;
+        for (size_t col_lhs = 0; col_lhs < columns; col_lhs++) {
+          current_output += (*this)(row, col_lhs) * rhs(col_lhs, col);
+        }
+        output(row, col) = current_output;
+      }
+    }
+#endif
     return output;
   }
 
