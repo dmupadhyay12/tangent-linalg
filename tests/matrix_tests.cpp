@@ -243,3 +243,17 @@ TEST_CASE("Validate norm of a vector of floats") {
 
   REQUIRE(vec_norm == Approx(6.4031242374).epsilon(1e-6));
 }
+
+TEST_CASE("Validate that transpose of a matrix works") {
+  auto matrix_1 =
+      from_list<float, 3, 2>({0.5f, 1.0f, -2.0f, 0.25f, 1.25f, -1.0f});
+
+  auto matrix_2 = matrix_1.transpose();
+
+  auto matrix_ref = from_list<float, 2, 3>({0.5, -2.0, 1.25, 1.0, 0.25, -1.0});
+
+  for (size_t r = 0; r < 2; ++r)
+    for (size_t c = 0; c < 3; ++c)
+      REQUIRE(matrix_2(r, c) ==
+              Approx(matrix_ref(r, c)).epsilon(1e-12).margin(1e-12));
+}

@@ -42,7 +42,7 @@ public:
    * @param col
    * @return T
    */
-  const T &operator()(size_t row, size_t col) const {
+  inline const T &operator()(size_t row, size_t col) const {
     return container[row][col];
   }
 
@@ -65,7 +65,9 @@ public:
 
   /**
    * @brief Returns a product of two matrices - checks for dimensional
-   * compatibility and then computes matrix product
+   * compatibility and then computes matrix product. This matrix multiplication
+   * implements optimization techniques such as loop-order optimization and
+   * blocking/tiling for better performance
    *
    * @param rhs
    * @return Matrix&
@@ -77,9 +79,11 @@ public:
         "Matrix multiplication cannot be done due to incompatible dimensions");
     int tile_size = 16;
     Matrix<T, rows, cols_rhs> output;
-    // Block sizes for blocking of the matrix multiplications
-    constexpr size_t Nc = 64; // try 32; also test 48 or 64
-    constexpr size_t Kc = 64; // try 128–512 based on L2
+    // Block sizes for blocking of the matrix multiplications. Implemented as 64
+    // and 64 here but can be tuned depending on matrix sizes to be multiplied
+    // and CPU specific performance
+    constexpr size_t Nc = 64;
+    constexpr size_t Kc = 64;
 
     for (size_t k0 = 0; k0 < columns; k0 += Kc) {
       const size_t kend = std::min(columns, k0 + Kc);
@@ -171,6 +175,28 @@ public:
       }
     }
     return true;
+  }
+
+  /**
+   * @brief Transposes the matrix
+   *
+   * @return A matrix that is a transpose of the original. It will have the
+   * flipped dimensions of the original matrix (current object/instance) on
+   * which this function is called.
+   *
+   */
+  Matrix<T, columns, rows> transpose() const {
+    const unsigned int num_items = rows * columns;
+    std::array<T, num_items> destination_container = {};
+    int num_pushed_elements = 0;
+    for (size_t col = 0; col < columns; col++) {
+      for (size_t row = 0; row < rows; row++) {
+        destination_container[num_pushed_elements] = (*this)(row, col);
+        num_pushed_elements++;
+      }
+    }
+
+    return Matrix<T, columns, rows>(destination_container);
   }
 
   void print() {
